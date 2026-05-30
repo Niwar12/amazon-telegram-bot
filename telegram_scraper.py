@@ -1,37 +1,53 @@
 import requests
 import os
 
-# جلب المفاتيح السرية من السيرفر
+# جلب المفاتيح السرية من السيرفر السحابي
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 CHAT_ID = os.environ.get("CHAT_ID", "")
 
-def send_test_message():
-    print("🔄 جاري إرسال رسالة الاختبار المباشرة إلى التليجرام...")
-    
-    # رسالة ثابتة ومضمونة 100% بدون الحاجة لأي موقع خارجي
-    alert_message = (
-        "🚀 **تهانينا.. منظومة الأتمتة السحابية تعمل بنجاح!** 🚀\n\n"
-        "📱 **حالة السيرفر:** متصل بالسحاب (GitHub Actions)\n"
-        "✅ **خط الاتصال:** جاهز ومستقر تماماً.\n\n"
-        "🎯 _وصول هذه الرسالة يعني أن الـ Token والـ Chat ID الخاصين بك صحيحين 100%، والنظام جاهز الآن لأي مشروع!_"
-    )
-    
+def send_telegram_message(text_message):
+    """إرسال التقرير المالي الفوري للتليجرام"""
     telegram_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": CHAT_ID,
-        "text": alert_message,
+        "text": text_message,
         "parse_mode": "Markdown"
     }
-    
+    response = requests.post(telegram_url, data=payload)
+    return response.status_code == 200
+
+def track_gold_market():
+    print("🔄 جاري سحب أسعار الذهب الحية من البورصة العالمية...")
     try:
-        response = requests.post(telegram_url, data=payload)
+        # استخدام رابط ياهو فاينانس لأسعار الذهب (XAU/USD) - مستقر وضد الحظر
+        url = "https://query1.finance.yahoo.com/v8/finance/chart/GC=F"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        response = requests.get(url, headers=headers)
+        
         if response.status_code == 200:
-            print("✅ يا بطل! تم إرسال الرسالة بنجاح إلى التليجرام!")
+            data = response.json()
+            gold_price = data['chart']['result'][0]['meta']['regularMarketPrice']
+            
+            # تنسيق السعر ليظهر بشكل مالي (مثال: $2,350.50)
+            formatted_price = f"${gold_price:,.2f}"
+            
+            # صياغة التقرير المالي الاحترافي للعميل
+            alert_message = (
+                f"📈 **نظام المراقبة المالية السحابي** 📈\n\n"
+                f"🏆 **الأصل المراقب:** الذهب العالمي (XAU/USD)\n"
+                f"💰 **السعر الحالي للأونصة:** `{formatted_price}`\n\n"
+                f"⚡ _تحديث فوري تلقائي - النظام يعمل بالكامل في السحاب بدون أي تدخل بشري._"
+            )
+            
+            if send_telegram_message(alert_message):
+                print("✅ تم إرسال تقرير الذهب بنجاح!")
+            else:
+                print("❌ فشل إرسال الرسالة.")
         else:
-            print(f"❌ السيرفر شغال، ولكن تليجرام رفض الإرسال. رمز الخطأ: {response.status_code}")
-            print("💡 هذا يعني أن هناك حرفاً خاطئاً أو مسافة زائدة في الـ BOT_TOKEN أو الـ CHAT_ID داخل الـ Secrets.")
+            print(f"❌ خطأ في جلب البيانات من البورصة: {response.status_code}")
+            
     except Exception as e:
-        print(f"💥 حدث خطأ أثناء الاتصال بالتليجرام: {e}")
+        print(f"💥 حدث خطأ: {e}")
 
 if __name__ == "__main__":
-    send_test_message()
+    track_gold_market()
