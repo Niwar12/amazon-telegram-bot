@@ -2,8 +2,8 @@ import requests
 import os
 
 # --- إعدادات التليجرام السرية المربوطة بالسيرفر ---
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "ضع_التوكن_هنا_إذا_كنت_تجرب_محلياً")
-CHAT_ID = os.environ.get("CHAT_ID", "ضع_الشات_ايدي_هنا_إذا_كنت_تجرب_محلياً")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+CHAT_ID = os.environ.get("CHAT_ID", "")
 
 def send_telegram_message(text_message):
     """إرسال التقرير الفوري للتليجرام"""
@@ -19,21 +19,21 @@ def send_telegram_message(text_message):
 def track_live_market():
     print("🔄 جاري سحب الأسعار الحية من السوق الآن...")
     try:
-        # استخدام نظام بث مباشر ومفتوح للأسعار (Binance API) - مضمون 100% ولا يحظر السيرفرات
-        url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+        # استخدام CoinDesk API - مفتوح تماماً ولا يحظر سيرفرات جيت هاب (قاهر الخطأ 451)
+        url = "https://api.coindesk.com/v1/bpi/currentprice.json"
         response = requests.get(url)
         
         if response.status_code == 200:
             data = response.json()
-            raw_price = float(data['price'])
+            raw_price = data['bpi']['USD']['rate_float']
             
             # تنسيق السعر ليظهر بشكل مالي احترافي (مثال: $65,250.00)
             formatted_price = f"${raw_price:,.2f}"
             
-            # صياغة الرسالة النهائية للزبون
+            # صياغة الرسالة النهائية
             alert_message = (
-                f"📊 **نظام مراقبة الأسعار السحابي** 📊\n\n"
-                f"🪙 **الأصل المتداول:** Bitcoin (BTC/USDT)\n"
+                f"📊 **نظام مراقبة الأسعار السحابي (ناجح)** 📊\n\n"
+                f"🪙 **الأصل المتداول:** Bitcoin (BTC/USD)\n"
                 f"💰 **السعر الحالي في السوق:** `{formatted_price}`\n\n"
                 f"⚡ _النظام يعمل سحابياً بنجاح ومستقر 100% بدون أي تدخّل بشري!_"
             )
@@ -41,7 +41,7 @@ def track_live_market():
             if send_telegram_message(alert_message):
                 print("✅ تم إرسال التنبيه الفوري إلى تليجرام بنجاح باهر!")
             else:
-                print("❌ السكربت ممتاز ولكن فشل إرسال رسالة التليجرام (تأكد من الـ ID والـ Token).")
+                print("❌ الكود جلب السعر بنجاح، لكن فشل إرسال رسالة التليجرام (تأكد من الـ ID والـ Token في الـ Secrets).")
         else:
             print(f"❌ فشل السيرفر في جلب السعر المباشر. رمز الخطأ: {response.status_code}")
             
